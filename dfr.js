@@ -43,39 +43,23 @@ function calculateMean(dataset) {
 function calculateMedian(dataset) {
   // check for invalid input
   if (Array.isArray(dataset[0]) || !dataset.length) return 0;
-  // sort data in ascending order >> filter out Not-a-Number >> map/iterate to cast each item/data into number 
-  let sortDataset = dataset.sort().filter(data => { if (Number(data) !== 'NaN') return Number(data) }).map(data => Number(data))
+  // sort dataset 
+  let sortDataset = dataset
+    .filter(data => !isNaN(Number(data))) // Filter out non-numeric values
+    .map(data => Number(data)) // Convert to numbers
+    .sort(); // sort the data in ascending order
 
   let totalNoOfDataset = sortDataset.length 
+  let middleIndex = Math.floor(totalNoOfDataset * 0.5)
   if (totalNoOfDataset % 2 === 0){
     // for dataset with even no. of items
-    let medianIndexes = [(totalNoOfDataset * 0.5) - 1, ((totalNoOfDataset * 0.5))]
-    let medianValues = medianIndexes.map(index => sortDataset[index])
+    let medianValues = [sortDataset[middleIndex - 1], sortDataset[middleIndex]]
     return calculateMean(medianValues);
   } else {
     // for dataset with odd no. of items
-    let medianIndex = Math.floor(totalNoOfDataset * 0.5)
-    return sortDataset[medianIndex]
+    return sortDataset[middleIndex]
   }
 }
-
-// test
-const responseTimes = [1.5, 1.9, 10.0, 50, -10, "3", "1"];
-calculateMedian(responseTimes); // → 1.9
-
-// const evenDataset = [1, 2, 3, 4];
-// calculateMedian(evenDataset); // → 2.5 (average of 2 and 3)
-
-const invalidData = [[1], [2]]; // 2D array instead of dataset
-calculateMedian(invalidData); // → 0
-
-const testData = [10, 20, "30", "invalid", 40, 50]; // 2D array instead of dataset
-calculateMedian(testData); // → 30
-
-const evenDataset = [10, 20, 30, 40]
-calculateMedian(evenDataset); // → 30
-
-
 
 function convertToNumber(dataframe, col) {
   // returns an integer, which is the number that were  converted to floats.
@@ -101,9 +85,50 @@ function flatten(dataframe) {
 }
 
 function loadCSV(csvFile, ignoreRows, ignoreCols) {
+  fileExists(csvFile);
+  // read data from csv file & store in linesArray
+  const data = fs.readFileSync(csvFile, "utf-8");
+  const linesArray = data.split(/\n/)
+  // console.log(linesArray)
+  return linesArray;
+
+  // skip first row condition [0]
+  // skip first and second rows [0,1]
+  // skip no rows []
+  // const skipRowConditions = {
+  //   "[0]": {return linesArray.shift()},//"skip first row"
+  //   "[0, 1]": "skip first and second row",
+  //   "[]": "skip no rows"
+  // }
+  if (ignoreRows === '[0]') { return linesArray.shift() }
+  if (ignoreRows === '[0,1]') { return linesArray.splice(0,2) }
+  if (ignoreRows === '[]') { return linesArray }
+
+  if (ignoreCols === '[0]') { return linesArray.shift() }
+  if (ignoreCols === '[0,1]') { return linesArray.splice(0,2) }
+  if (ignoreCols === '[]') { return linesArray }
 
 }
 
+// test
+// const [salesData, totalRows, totalColumns] = loadCSV(
+//   "./sales_data.csv",
+//   [0], // Ignore first row (headers)
+//   [] // Include all columns
+// );
+
+// console.log([salesData, totalRows, totalColumns])
+// totalRows → 7 (6 data rows + 1 header)
+// totalColumns → 7
+// salesData will be:
+// [
+//   ['2024-01-15', 'North', 'Laptop', '5', '999.99', '4999.95', 'completed'],
+//   ['2024-01-15', 'South', 'Phone',  '10', '499.99', '4999.90', 'completed'],
+//   ['2024-01-16', 'North', 'Tablet', '3', '699.99', '2099.97', 'pending'],
+//   ['2024-01-16', 'East',  'Laptop', '7', '999.99', '6999.93', 'completed'],
+//   ['2024-01-17', 'West',  'Phone',  '4', '499.99', '1999.96', 'completed'],
+//   ['2024-01-17', 'South', 'Tablet', '6', '699.99', '4199.94', 'cancelled']
+// ]
 
 function createSlice(dataframe, columnIndex, pattern, exportColumns = []) {
 
