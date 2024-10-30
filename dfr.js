@@ -85,37 +85,62 @@ function flatten(dataframe) {
 }
 
 function loadCSV(csvFile, ignoreRows, ignoreCols) {
-  fileExists(csvFile);
-  // read data from csv file & store in linesArray
+  // 1.check to see if file exists
+  if (fileExists(csvFile) === false) return [[], -1, -1]
+  // 2.if file exists
   const data = fs.readFileSync(csvFile, "utf-8");
-  const linesArray = data.split(/\n/)
-  // console.log(linesArray)
-  return linesArray;
+  // inputLines is an array of lines (each line/row is an element)
+  const inputRows = data.split(/\n/)
+  // console.log(inputRows)
 
-  // skip first row condition [0]
-  // skip first and second rows [0,1]
-  // skip no rows []
-  // const skipRowConditions = {
-  //   "[0]": {return linesArray.shift()},//"skip first row"
-  //   "[0, 1]": "skip first and second row",
-  //   "[]": "skip no rows"
-  // }
-  if (ignoreRows === '[0]') { return linesArray.shift() }
-  if (ignoreRows === '[0,1]') { return linesArray.splice(0,2) }
-  if (ignoreRows === '[]') { return linesArray }
+  // 1. first process raw input file into 2d array
+  const dataMatrix = []
+  inputRows.forEach(inputRow => {
+    // split each row into an array of elements 
+    let inputElements = inputRow.split(',');
+    // dataMatrix is now an array of arrays, as I enter array of data into [] every iteration
+    dataMatrix.push(inputElements);
+  })
+  // console.log(dataMatrix)
 
-  if (ignoreCols === '[0]') { return linesArray.shift() }
-  if (ignoreCols === '[0,1]') { return linesArray.splice(0,2) }
-  if (ignoreCols === '[]') { return linesArray }
+  // refine data as per user argument - delete rows & columns
+  // 2. 2nd further process data by iterating through the row argument which is in array format
+  if (!ignoreRows.length) {
+    dataMatrix
+  } else {
+    ignoreRows.forEach(ignoreRow => {
+      dataMatrix.splice(ignoreRow, 1)
+    })
+  }
 
+  // 3. 3rd further process data by iterating through the col argument which is in array format
+  if (!ignoreCols.length) {
+    dataMatrix
+  } else {
+    ignoreCols.forEach(ignoreCol => {
+      for (let row = 0; row < dataMatrix.length; row++){
+        // console.log(dataMatrix[row].length)
+        dataMatrix[row].splice(ignoreCol, 1);
+        console.log(dataMatrix)
+      }
+    })
+  }
+  // console.log(dataMatrix)
+
+  // count no. of columns & rows of final dataMatrix or dataframe
+  let totalRows = dataMatrix.length + 1;
+  let totalColumns = dataMatrix[0].length;
+
+  console.log([dataMatrix, totalRows, totalColumns]);
+  return [dataMatrix, totalRows, totalColumns];
 }
 
 // test
-// const [salesData, totalRows, totalColumns] = loadCSV(
-//   "./sales_data.csv",
-//   [0], // Ignore first row (headers)
-//   [] // Include all columns
-// );
+const [salesData, totalRows, totalColumns] = loadCSV(
+  "./sales_data.csv",
+  [0], // Ignore first row (headers)
+  [] // Include all columns
+);
 
 // console.log([salesData, totalRows, totalColumns])
 // totalRows → 7 (6 data rows + 1 header)
