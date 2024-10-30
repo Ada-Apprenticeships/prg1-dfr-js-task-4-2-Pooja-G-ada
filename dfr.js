@@ -62,7 +62,6 @@ function calculateMedian(dataset) {
 }
 
 function convertToNumber(dataframe, col) {
-  // returns an integer, which is the number that were  converted to floats.
   let countOfColumns = 0;
   dataframe.forEach(row => {
     if (validNumber(row[col]) && typeof row[col] !== 'number') {
@@ -74,7 +73,6 @@ function convertToNumber(dataframe, col) {
 }
 
 function flatten(dataframe) {
-  // returns a dataset (a flattened dataframe)
   let flatDataSet = []
   if (dataDimensions(dataframe)[1] !== 1){
     return []
@@ -85,75 +83,40 @@ function flatten(dataframe) {
 }
 
 function loadCSV(csvFile, ignoreRows, ignoreCols) {
-  // 1.check to see if file exists
-  if (fileExists(csvFile) === false) return [[], -1, -1]
-  // 2.if file exists
+  // check if CSV file exists
+  if (fileExists(csvFile) === false) return [[], -1, -1];
+
+  // Read csv file content
   const data = fs.readFileSync(csvFile, "utf-8");
-  // inputLines is an array of lines (each line/row is an element)
-  const inputRows = data.split(/\n/)
-  // console.log(inputRows)
 
-  // 1. first process raw input file into 2d array
+  // split content by lines - 1D array
+  const lines = data.split(/\n/);
+  
+  // process each line and split it into columns - 2D array
   const dataMatrix = []
-  inputRows.forEach(inputRow => {
-    // split each row into an array of elements 
-    let inputElements = inputRow.split(',');
-    // dataMatrix is now an array of arrays, as I enter array of data into [] every iteration
-    dataMatrix.push(inputElements);
+  lines.forEach(line => {
+    dataMatrix.push(line.split(','));
   })
-  // console.log(dataMatrix)
 
-  // refine data as per user argument - delete rows & columns
-  // 2. 2nd further process data by iterating through the row argument which is in array format
-  if (!ignoreRows.length) {
-    dataMatrix
-  } else {
-    ignoreRows.forEach(ignoreRow => {
-      dataMatrix.splice(ignoreRow, 1)
-    })
-  }
+  // remove specified rows
+  ignoreRows.forEach(ignoreRowIndex => {
+    dataMatrix.splice(ignoreRowIndex, 1);
+  })
 
-  // 3. 3rd further process data by iterating through the col argument which is in array format
-  if (!ignoreCols.length) {
-    dataMatrix
-  } else {
-    ignoreCols.forEach(ignoreCol => {
-      for (let row = 0; row < dataMatrix.length; row++){
-        // console.log(dataMatrix[row].length)
-        dataMatrix[row].splice(ignoreCol, 1);
-        console.log(dataMatrix)
-      }
-    })
-  }
-  // console.log(dataMatrix)
+  // remove specified columns
+  ignoreCols.forEach(ignoreColIndex => {
+    for (let row = 0; row < dataMatrix.length; row++){
+      dataMatrix[row].splice(ignoreColIndex, 1);
+    }
+  })
 
-  // count no. of columns & rows of final dataMatrix or dataframe
-  let totalRows = dataMatrix.length + 1;
-  let totalColumns = dataMatrix[0].length;
+  // calculate total no. of columns & rows of processed data
+  const totalRows = dataMatrix.length + 1;
+  const totalColumns = dataMatrix[0].length;
 
-  console.log([dataMatrix, totalRows, totalColumns]);
   return [dataMatrix, totalRows, totalColumns];
 }
 
-// test
-const [salesData, totalRows, totalColumns] = loadCSV(
-  "./sales_data.csv",
-  [0], // Ignore first row (headers)
-  [] // Include all columns
-);
-
-// console.log([salesData, totalRows, totalColumns])
-// totalRows → 7 (6 data rows + 1 header)
-// totalColumns → 7
-// salesData will be:
-// [
-//   ['2024-01-15', 'North', 'Laptop', '5', '999.99', '4999.95', 'completed'],
-//   ['2024-01-15', 'South', 'Phone',  '10', '499.99', '4999.90', 'completed'],
-//   ['2024-01-16', 'North', 'Tablet', '3', '699.99', '2099.97', 'pending'],
-//   ['2024-01-16', 'East',  'Laptop', '7', '999.99', '6999.93', 'completed'],
-//   ['2024-01-17', 'West',  'Phone',  '4', '499.99', '1999.96', 'completed'],
-//   ['2024-01-17', 'South', 'Tablet', '6', '699.99', '4199.94', 'cancelled']
-// ]
 
 function createSlice(dataframe, columnIndex, pattern, exportColumns = []) {
 
