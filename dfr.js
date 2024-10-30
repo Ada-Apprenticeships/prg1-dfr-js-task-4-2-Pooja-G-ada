@@ -5,11 +5,16 @@ function fileExists(filename) {
 }
 
 function validNumber(value) {
+  // This regular expression matches a number, which can be:
+  // - Positive or negative 
+  // - One or more digits
+  // - Optionally followed by a decimal point and one or more digits
   const regexNumber = /^-?\d{1,}(\.\d{1,})?$/;
   return regexNumber.test(value)
 }
 
 function dataDimensions(dataframe) {
+  // check if the 'dataframe' variable is undefined or an empty string,
   if (typeof dataframe === 'undefined'|| dataframe === '') return [-1, -1];
   let rows = dataframe.length; 
   let columns = Array.isArray(dataframe[0]) ? dataframe[0].length : -1 ;
@@ -73,13 +78,12 @@ function convertToNumber(dataframe, col) {
 }
 
 function flatten(dataframe) {
-  let flatDataSet = []
+  // check dataframe is a 2D array with single column
   if (dataDimensions(dataframe)[1] !== 1){
     return []
-  } else {
-    dataframe.forEach(row => flatDataSet.push(row[0]));
-  }
-  return flatDataSet
+  } 
+  // return 1D array
+  return dataframe.map(row => row[0]);
 }
 
 function loadCSV(csvFile, ignoreRows, ignoreCols) {
@@ -91,9 +95,11 @@ function loadCSV(csvFile, ignoreRows, ignoreCols) {
 
   // split content by lines - 1D array
   const lines = data.split(/\n/);
+
+  // dataMatrix initialised where the output dataframe will be stored
+  const dataMatrix = []
   
   // process each line and split it into columns - 2D array
-  const dataMatrix = []
   lines.forEach(line => {
     dataMatrix.push(line.split(','));
   })
@@ -119,7 +125,20 @@ function loadCSV(csvFile, ignoreRows, ignoreCols) {
 
 
 function createSlice(dataframe, columnIndex, pattern, exportColumns = []) {
+  // ----!filtered array based on pattern!-----
+  const filteredArray = (pattern === '*') ? 
+    dataframe : //if pattern is '*'
+    dataframe.filter(row => (row[columnIndex] === pattern)); // else filter rows where the specified columnIndex matches the pattern.
 
+  // -----!process filtered Array to return the selected coulmns!------
+  //loop/map thorugh each row in the filtered array
+  let processeddataframe = filteredArray.map(row => { 
+    //loop/map through each exportColumns array (an array of indices) to get corresponding value from each row
+    let filteredColumns = exportColumns.map(colIndex => row[colIndex]) 
+    return filteredColumns
+  })
+
+  return processeddataframe;
 }
 
 module.exports = {
